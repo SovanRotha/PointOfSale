@@ -150,15 +150,13 @@ class UserController extends Controller
     //             ], 401);
     //         }
 
-
-
     //         if ($request->hasSession()) {
     //             $request->session()->regenerate();
     //         }
 
     //         $user = User::with('roles.permissions')->find(Auth::id());
 
-    //          $token = $user->createToken('pos-token')->plainTextToken;
+    //         $token = $user->createToken('pos-token')->plainTextToken;
 
     //         return response()
     //             ->json([
@@ -179,6 +177,33 @@ class UserController extends Controller
     //     } catch (\Throwable $e) {
     //         return $this->handleException($e);
     //     }
+    // }
+
+    // public function logout(Request $request)
+    // {
+
+    //     $user = $request->user();
+
+
+    //     // delete current token
+    //     $user->currentAccessToken()->delete();
+
+
+    //     return response()
+    //         ->json([
+    //             'message' => 'Logout successful'
+    //         ])
+    //         ->cookie(
+    //             'auth_token',
+    //             '',
+    //             -1,
+    //             '/',
+    //             null,
+    //             false,
+    //             true,
+    //             false,
+    //             'Strict'
+    //         );
     // }
 
     public function login(Request $request)
@@ -203,10 +228,10 @@ class UserController extends Controller
         $user = User::with('roles.permissions')
             ->find(Auth::id());
 
-
         return response()->json([
             'message' => 'Login successful',
-            'user' => $user
+            'user' => $user,
+            
         ]);
     }
 

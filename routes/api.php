@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\UserController;
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\DiscountLog\DiscountlogController;
 use App\Http\Controllers\Item\CategoryController;
 use App\Http\Controllers\Item\MenuItemController;
@@ -9,7 +10,8 @@ use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Order\OrderItemController;
 use App\Http\Controllers\Order\OrderItemModifier;
 use App\Http\Controllers\Payment\PaymentController;
-use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\Auth\PermissionController;
+use App\Http\Controllers\PermissionController as ControllersPermissionController;
 use App\Http\Controllers\StockLog\StockLogController;
 use App\Http\Controllers\SystemLog\ActivityLogController;
 use App\Http\Controllers\SystemLog\NotificationController;
@@ -27,7 +29,8 @@ use Spatie\Permission\Models\Role;
 |--------------------------------------------------------------------------
 */
 
-
+// Sanctum CSRF cookie route for SPA authentication
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [UserController::class, 'login']);
@@ -44,20 +47,12 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::post('/logout', [UserController::class, 'logout']);
-    Route::get('/user', function (Request  $request) {
+    Route::get('/user', function (Request $request) {
         return $request->user()->load('roles.permissions');
     });
-    /*
-    |--------------------------------------------------------------------------
-    | User Management
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('permission:manage users')->group(function () {
-        Route::get('/users', [UserController::class, 'index']);
-        Route::get('/users/{id}', [UserController::class, 'show']);
-        Route::put('/users/{id}', [UserController::class, 'update']);
-        Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    });
+
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
     /*
     |--------------------------------------------------------------------------
     | Tables
