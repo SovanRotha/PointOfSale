@@ -24,11 +24,11 @@ class RoleSeeder extends Seeder
             'employee',
         ];
 
-        foreach ($roles as $role){
-            Role::create([
+        foreach ($roles as $role) {
+            Role::firstOrCreate([
                 'name' => $role,
                 'guard_name' => 'web',
-        ]);
+            ]);
         }
     }
 }

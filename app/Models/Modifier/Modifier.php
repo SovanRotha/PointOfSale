@@ -2,9 +2,9 @@
 
 namespace App\Models\Modifier;
 
-use App\Http\Controllers\Order\OrderItemModifier;
 use App\Models\Item\MenuItem;
 use App\Models\Order\OrderItem;
+use App\Models\Order\OrderItemModifier;
 use Illuminate\Database\Eloquent\Model;
 
 class Modifier extends Model

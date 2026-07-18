@@ -5,6 +5,7 @@ namespace App\Http\Controllers\StockLog;
 use App\Http\Controllers\Controller;
 use App\Models\Item\MenuItem;
 use App\Models\StockLog\StockLogs;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,52 +14,55 @@ class StockLogController extends Controller
     public function store(Request $request)
     {
         try {
-        // $validate = $request->validate([
-        //     "menu_item_id" => "required|integer|exists:menu_items, id",
-        //     "previous_stock" => "nullable|integer",
-        //     "new_stock" => "nullable|integer",
-        //     "quantity_change" => "required|integer",
-        //     "change_type" => "required|in:addition, subtraction",
-        //     "reason" => "nullable|string",
-        //     "order_id" => "nullable|integer:exists:orders, id",
-        //     "notes" => "nullable|string",
+            $data = $request->validate([
+                'menu_item_id' => 'required|exists:menu_items,id',
+                'quantity_change' => 'required|integer',
+                'change_type' => 'required|in:addition,subtraction',
+                'reason' => 'nullable|string',
+                'user_id' => 'nullable|exists:users,id',
+                'order_id' => 'nullable|exists:orders,id',
+                'notes' => 'nullable|string',
+            ]);
 
-        // ]);
+            $menuItem = MenuItem::findOrFail($data['menu_item_id']);
+            $previousStock = $menuItem->stock_quantity;
+            $userId = $data['user_id'] ?? Auth::id();
 
-        $menu_items = MenuItem::find($request->menu_item_id);
+            if (empty($userId)) {
+                $userId = User::query()->value('id');
+            }
 
-        $oldStock = MenuItem::find($request->stock_quantity);
-                    
+            if (empty($userId)) {
+                throw new \RuntimeException('No user available to associate with the stock log.');
+            }
 
-        if($request->change_type === "addition"){
-            $menu_items->stock_quantity +=  $request->quantity_change;
-        }
-        elseif($request->change_type === "substraction"){
-            $menu_items->stock_quantity -= $request->quantity_change;
-        }
+            if ($data['change_type'] === 'addition') {
+                $menuItem->stock_quantity += $data['quantity_change'];
+            } else {
+                $menuItem->stock_quantity -= $data['quantity_change'];
+            }
 
-        $menu_items->save();
+            $menuItem->save();
 
-        $stock_log = StockLogs::create([
-            "menu_item_id" => $request->id,
-            "previous_stock" => $request->$oldStock,
-            "quantity_change" => $request->quantity,
-            "change_tyep" => $request->change_type,
-            "new_stock" => $menu_items->stock_quantity,
-            "reason" => $request->reason,
-            "user_id" => Auth::id(),
-            "order_id" => $request->order_id,
-            "notes" => $request->notes,
-        ]);
+            $stockLog = StockLogs::create([
+                'menu_item_id' => $menuItem->id,
+                'previous_stock' => $previousStock,
+                'new_stock' => $menuItem->stock_quantity,
+                'quantity_change' => $data['quantity_change'],
+                'change_type' => $data['change_type'],
+                'reason' => $data['reason'] ?? null,
+                'user_id' => $userId,
+                'order_id' => $data['order_id'] ?? null,
+                'notes' => $data['notes'] ?? null,
+            ]);
 
-        return response()->json([
-            "message" => "Stock updated successfully",
-            "stock_log" => $stock_log,
-        ]);
+            return response()->json([
+                'message' => 'Stock updated successfully',
+                'stock_log' => $stockLog,
+            ], 200);
         } catch (\Throwable $e) {
             return $this->handleException($e);
         }
-
     }
 
      public function destroy($id)
@@ -81,37 +85,27 @@ class StockLogController extends Controller
 
     }
 
-    public function index(Request $request, $query){
+    public function index(Request $request)
+    {
         try {
-            $stock_log = StockLogs::with('user', 'menuItem');
+            $query = StockLogs::with('user', 'menuItem');
 
-            if ($request->menu_item) {
-                $query->where(
-                    'product_id',
-                    $request->product_id
-                );
+            if ($request->filled('menu_item_id')) {
+                $query->where('menu_item_id', $request->menu_item_id);
             }
 
-            // Filter by type
-            if ($request->type) {
-                $query->where(
-                    'type',
-                    $request->type
-                );
+            if ($request->filled('change_type')) {
+                $query->where('change_type', $request->change_type);
             }
 
-            // Filter date
-            if ($request->date) {
-                $query->whereDate(
-                    'created_at',
-                    $request->date
-                );
+            if ($request->filled('date')) {
+                $query->whereDate('created_at', $request->date);
             }
 
-            $stock_log = $query->latest()->paginate(20);
+            $stockLogs = $query->latest()->paginate(20);
 
             return response()->json([
-                "stock_log" => $stock_log,
+                'stock_log' => $stockLogs,
             ]);
         } catch (\Throwable $e) {
             return $this->handleException($e);
@@ -122,7 +116,7 @@ class StockLogController extends Controller
     {
         try {
             $stock_log = StockLogs::with([
-                'product',
+                'menuItem',
                 'user'
             ])
             ->findOrFail($id);

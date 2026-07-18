@@ -14,16 +14,17 @@ class OrderItemModifier extends Model
         'order_item_id',
         'modifier_id',
         'price',
+        'quantity'
     ];
 
     public function orderItem()
     {
-        return $this->belongsToMany(OrderItem::class, 'order_item_modifiers', 'order_item_id', 'modifier_id')->withPivot('price');        
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
 
     public function modifier()
     {
-        return $this->belongsToMany(Modifier::class, 'order_item_modifiers', 'modifier_id', 'order_item_id')->withPivot('price');
+        return $this->belongsTo(Modifier::class, 'modifier_id');
     }
 
     

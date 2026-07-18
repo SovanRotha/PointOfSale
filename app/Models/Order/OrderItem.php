@@ -2,7 +2,6 @@
 
 namespace App\Models\Order;
 
-use App\Http\Controllers\Order\OrderItemModifier;
 use App\Models\Item\MenuItem;
 use App\Models\Modifier\Modifier;
 use Illuminate\Database\Eloquent\Model;
@@ -35,7 +34,9 @@ class OrderItem extends Model
     {
         return $this->hasMany(OrderItemModifier::class);
     }
-    
 
-    
+    public function modifiers()
+    {
+        return $this->hasMany(OrderItemModifier::class);
+    }
 }

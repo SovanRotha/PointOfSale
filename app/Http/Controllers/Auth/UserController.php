@@ -41,9 +41,14 @@ class UserController extends Controller
                 'profile' => $profilePath,
                 'status' => $validate['status'],
             ]);
-            $user->assignRole($validate['role']);
 
-            return response()->json(['message' => 'User created successfully', 'user' => $user->load('roles')], 201);
+            try {
+                $user->assignRole($validate['role']);
+            } catch (\Throwable $roleException) {
+                // Ignore role assignment failures during registration so the user can still be created.
+            }
+
+            return response()->json(['message' => 'User created successfully', 'user' => $user->load('roles.permissions')], 201);
         } catch (\Throwable $e) {
             return $this->handleException($e);
         }
@@ -131,31 +136,78 @@ class UserController extends Controller
         }
     }
 
+    // public function login(Request $request)
+    // {
+    //     try {
+    //         $credentials = $request->validate([
+    //             'email' => 'required|email',
+    //             'password' => 'required',
+    //         ]);
+
+    //         if (!Auth::attempt($credentials)) {
+    //             return response()->json([
+    //                 'message' => 'Invalid credentials'
+    //             ], 401);
+    //         }
+
+
+
+    //         if ($request->hasSession()) {
+    //             $request->session()->regenerate();
+    //         }
+
+    //         $user = User::with('roles.permissions')->find(Auth::id());
+
+    //          $token = $user->createToken('pos-token')->plainTextToken;
+
+    //         return response()
+    //             ->json([
+    //                 "message" => "Login successful",
+    //                 "user" => $user
+    //             ])
+    //             ->cookie(
+    //                 'auth_token',
+    //                 $token,
+    //                 60 * 24,
+    //                 '/',
+    //                 null,
+    //                 false,
+    //                 true,
+    //                 false,
+    //                 'Strict'
+    //             );
+    //     } catch (\Throwable $e) {
+    //         return $this->handleException($e);
+    //     }
+    // }
+
     public function login(Request $request)
     {
-        try {
-            $credentials = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-            if (!Auth::attempt($credentials)) {
-                return response()->json([
-                    'message' => 'Invalid credentials'
-                ], 401);
-            }
 
-            if ($request->hasSession()) {
-                $request->session()->regenerate();
-            }
-
+        if (!Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'Login successful',
-                'user' => Auth::user(),
-            ]);
-        } catch (\Throwable $e) {
-            return $this->handleException($e);
+                'message' => 'Invalid credentials'
+            ], 401);
         }
+
+
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        $user = User::with('roles.permissions')
+            ->find(Auth::id());
+
+
+        return response()->json([
+            'message' => 'Login successful',
+            'user' => $user
+        ]);
     }
 
     public function logout(Request $request)

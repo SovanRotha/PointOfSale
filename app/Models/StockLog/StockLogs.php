@@ -15,6 +15,8 @@ class StockLogs extends Model
 
     protected $fillable = [
         'menu_item_id',
+        'previous_stock',
+        'new_stock',
         'quantity_change',
         'change_type',
         'reason',

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_number')->unique();
-            $table->foreignId('table_id')->constrained('tables')->onDelete('cascade');
+            $table->foreignId('table_id')->nullable()->constrained('tables')->onDelete('cascade');
             $table->enum('type', ['dine_in', 'takeaway', 'delivery']);
             $table->enum('status', ['pending', 'in_progress', 'completed', 'served', 'paid', 'voided', 'cancelled'])->default('pending');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

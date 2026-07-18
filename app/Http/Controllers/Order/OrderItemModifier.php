@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
-use App\Models\Modifier\Modifier;
 use App\Models\Order\OrderItemModifier as OrderItemModifierModel;
 use Illuminate\Http\Request;
 
@@ -28,7 +27,7 @@ class OrderItemModifier extends Controller
     //     ], 201);
     // }
 
-    public function destory($id){
+    public function destroy($id){
         try {
             $orderItemModifier = OrderItemModifierModel::find($id);
 

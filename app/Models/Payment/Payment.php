@@ -15,8 +15,10 @@ class Payment extends Model
         'order_id',
         'payment_method',
         'amount',
+        'change_amount',
         'transaction_reference',
         'status',
+        'paid_by',
     ];
 
     public function order()

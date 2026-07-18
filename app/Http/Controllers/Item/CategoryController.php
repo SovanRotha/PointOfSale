@@ -84,7 +84,7 @@ class CategoryController extends Controller
     public function index()
     {
         try {
-            $categories = Category::with('menuItems')->get();
+            $categories = Category::with('menuItem')->get();
 
             return response()->json([
                 'data' => $categories

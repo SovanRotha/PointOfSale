@@ -17,6 +17,7 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'table_id',
+        'type',
         'status',
         'user_id',
         'sub_total',
@@ -39,6 +40,11 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function items()
+    {
+        return $this->orderItem();
+    }
     
     public function payment()
     {
@@ -57,5 +63,10 @@ class Order extends Model
 
     public function stocklog(){
         return $this->hasMany(StockLogs::class);
+    }
+
+    public function orderItemModifier()
+    {
+        return $this->hasMany(OrderItemModifier::class);
     }
 }

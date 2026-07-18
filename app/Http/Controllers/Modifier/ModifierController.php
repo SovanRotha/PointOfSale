@@ -9,21 +9,21 @@ use Illuminate\Http\Request;
 class ModifierController extends Controller
 {
     //
-    // public function store(Request $request)
-    // {
-    //     $validate = $request->validate([
-    //         "menu_item_id" => "required|integer|exists:menu_items,id",
-    //         "name" => "required|string|max:255",
-    //         "price" => "required|numeric",
-    //     ]);
+    public function store(Request $request)
+    {
+        $validate = $request->validate([
+            "menu_item_id" => "required|integer|exists:menu_items,id",
+            "name" => "required|string|max:255",
+            "price" => "required|numeric",
+        ]);
 
-    //     $modifier = Modifier::create($validate);
+        $modifier = Modifier::create($validate);
 
-    //     return response()->json([
-    //         'message' => 'Modifier created successfully',
-    //         'data' => $modifier
-    //     ], 201);
-    // }
+        return response()->json([
+            'message' => 'Modifier created successfully',
+            'data' => $modifier
+        ], 201);
+    }
 
     public function update(Request $request, $id)
     {

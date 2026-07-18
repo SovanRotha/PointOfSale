@@ -33,6 +33,8 @@ class OrderController extends Controller
 
             'notes' => 'nullable|string',
 
+            'user_id' => "nullable|integer",
+
             'items' => 'required|array|min:1',
 
 
@@ -78,11 +80,7 @@ class OrderController extends Controller
                 'status' =>
                 'pending',
 
-
-                'created_by' =>
-                Auth::id(),
-
-
+            
                 'sub_total' => 0,
                 'tax' => $data['tax'] ?? 0,
                 'discount' => $data['discount'] ?? 0,
@@ -115,7 +113,7 @@ class OrderController extends Controller
                 }
 
 
-                $itemTotal = ($menuItem->selling_price + $modifierTotal) * $item['quantity'];
+                $itemTotal = ($menuItem->selling_price * $item['quantity']) + ($modifierTotal * $item['quantity']);
 
                 $subTotal += $itemTotal;
 
@@ -133,12 +131,8 @@ class OrderController extends Controller
                     $item['quantity'],
 
 
-                    'price' =>
+                    'unit_price' =>
                     $menuItem->selling_price,
-
-
-                    'total' =>
-                    $itemTotal,
 
 
                 ]);
@@ -160,12 +154,10 @@ class OrderController extends Controller
                         $modifier->id,
 
 
-                        'quantity' =>
-                        $modifierData['quantity'],
-
-
                         'price' =>
                         $modifier->price,
+
+                        'quantity' => $modifierData['quantity'],
 
                     ]);
                 }
@@ -198,7 +190,7 @@ class OrderController extends Controller
 
     public function index(){
         try {
-            $orders = Order::with('table', 'orderItem', 'orderItem.menuItem' , 'orderItem.modifiers' , 'user')->latest()->paginate(20);
+            $orders = Order::with('table', 'items.menuItem', 'items.modifiers', 'user')->latest()->paginate(20);
 
             return response()->json(
                 [
